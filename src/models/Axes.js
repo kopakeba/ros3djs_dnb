@@ -19,7 +19,11 @@ ROS3D.Axes = function(options) {
   var headRadius = options.headRadius || 0.023;
   var headLength = options.headLength || 0.1;
 
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   // create the cylinders for the objects
   this.lineGeom = new THREE.CylinderGeometry(shaftRadius, shaftRadius, 1.0 - headLength);
@@ -66,4 +70,7 @@ ROS3D.Axes = function(options) {
   addAxis(new THREE.Vector3(0, 1, 0));
   addAxis(new THREE.Vector3(0, 0, 1));
 };
-ROS3D.Axes.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.Axes.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Axes.prototype.constructor = ROS3D.Axes;

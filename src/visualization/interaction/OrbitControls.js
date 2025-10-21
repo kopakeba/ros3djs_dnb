@@ -17,7 +17,6 @@
  * @param autoRotate (optional) - the speed for auto rotating
  */
 ROS3D.OrbitControls = function(options) {
-  THREE.EventDispatcher.call(this);
   var that = this;
   options = options || {};
   var scene = options.scene;
@@ -362,6 +361,12 @@ ROS3D.OrbitControls = function(options) {
     }
   }
 
+  // Initialize EventDispatcher methods
+  this.addEventListener = THREE.EventDispatcher.prototype.addEventListener;
+  this.removeEventListener = THREE.EventDispatcher.prototype.removeEventListener;
+  this.dispatchEvent = THREE.EventDispatcher.prototype.dispatchEvent;
+  this._listeners = {};
+
   // add event listeners
   this.addEventListener('mousedown', onMouseDown);
   this.addEventListener('mouseup', onMouseUp);
@@ -519,5 +524,3 @@ ROS3D.OrbitControls.prototype.update = function() {
     this.lastPosition.copy(this.camera.position);
   }
 };
-
-Object.assign(ROS3D.OrbitControls.prototype, THREE.EventDispatcher.prototype);

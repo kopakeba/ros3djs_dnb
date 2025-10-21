@@ -20,10 +20,9 @@
   "eqnull": false,
   "browser": true,
   "devel": true,
-  "es5": true,
+  "esversion": 6,
   "strict": false,
   "trailing": true,
-  "quotmark": "single",
   "proto": true,
   "laxbreak": true,
   "mocha": true

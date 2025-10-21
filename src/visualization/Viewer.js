@@ -4,6 +4,8 @@
  * @author Jihoon Lee - jihoonlee.in@gmail.com
  */
 
+// TEST: This comment was added to test npm link + grunt dev auto-rebuild
+
 /**
  * A Viewer can be used to render an interactive 3D scene to a HTML5 canvas.
  *
@@ -66,7 +68,7 @@ ROS3D.Viewer = function(options) {
   this.cameraControls.userZoomSpeed = cameraZoomSpeed;
 
   // lights
-  this.scene.add(new THREE.AmbientLight(0x555555));
+  this.scene.add(new THREE.AmbientLight(0x555555, 1.0));
   this.directionalLight = new THREE.DirectionalLight(0xffffff, intensity);
   this.scene.add(this.directionalLight);
 
@@ -90,7 +92,6 @@ ROS3D.Viewer = function(options) {
 
   // add the renderer to the page
   document.getElementById(divID).appendChild(this.renderer.domElement);
-
   // begin the render loop
   this.start();
 };

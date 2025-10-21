@@ -14,7 +14,12 @@
  *   * fallbackTarget - the fallback target, e.g., the camera controls
  */
 ROS3D.MouseHandler = function(options) {
-  THREE.EventDispatcher.call(this);
+  // Initialize EventDispatcher methods
+  this.addEventListener = THREE.EventDispatcher.prototype.addEventListener;
+  this.removeEventListener = THREE.EventDispatcher.prototype.removeEventListener;
+  this.dispatchEvent = THREE.EventDispatcher.prototype.dispatchEvent;
+  this._listeners = {};
+
   this.renderer = options.renderer;
   this.camera = options.camera;
   this.rootObject = options.rootObject;
@@ -219,5 +224,3 @@ ROS3D.MouseHandler.prototype.notify = function(target, type, event3D) {
 
   return 1; // Event Failed
 };
-
-Object.assign(ROS3D.MouseHandler.prototype, THREE.EventDispatcher.prototype);

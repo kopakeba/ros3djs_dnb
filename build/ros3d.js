@@ -2537,7 +2537,11 @@ ROS3D.Axes = function(options) {
   var headRadius = options.headRadius || 0.023;
   var headLength = options.headLength || 0.1;
 
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   // create the cylinders for the objects
   this.lineGeom = new THREE.CylinderGeometry(shaftRadius, shaftRadius, 1.0 - headLength);
@@ -2584,7 +2588,10 @@ ROS3D.Axes = function(options) {
   addAxis(new THREE.Vector3(0, 1, 0));
   addAxis(new THREE.Vector3(0, 0, 1));
 };
-ROS3D.Axes.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.Axes.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Axes.prototype.constructor = ROS3D.Axes;
 
 /**
  * @author Russell Toris - rctoris@wpi.edu
@@ -4313,7 +4320,12 @@ ROS3D.Highlighter.prototype.restoreVisibility = function (scene) {
  *   * fallbackTarget - the fallback target, e.g., the camera controls
  */
 ROS3D.MouseHandler = function(options) {
-  THREE.EventDispatcher.call(this);
+  // Initialize EventDispatcher methods
+  this.addEventListener = THREE.EventDispatcher.prototype.addEventListener;
+  this.removeEventListener = THREE.EventDispatcher.prototype.removeEventListener;
+  this.dispatchEvent = THREE.EventDispatcher.prototype.dispatchEvent;
+  this._listeners = {};
+
   this.renderer = options.renderer;
   this.camera = options.camera;
   this.rootObject = options.rootObject;
@@ -4519,8 +4531,6 @@ ROS3D.MouseHandler.prototype.notify = function(target, type, event3D) {
   return 1; // Event Failed
 };
 
-Object.assign(ROS3D.MouseHandler.prototype, THREE.EventDispatcher.prototype);
-
 /**
  * @author David Gossow - dgossow@willowgarage.com
  * @author Xueqiao Xu - xueqiaoxu@gmail.com
@@ -4540,7 +4550,6 @@ Object.assign(ROS3D.MouseHandler.prototype, THREE.EventDispatcher.prototype);
  * @param autoRotate (optional) - the speed for auto rotating
  */
 ROS3D.OrbitControls = function(options) {
-  THREE.EventDispatcher.call(this);
   var that = this;
   options = options || {};
   var scene = options.scene;
@@ -4885,6 +4894,12 @@ ROS3D.OrbitControls = function(options) {
     }
   }
 
+  // Initialize EventDispatcher methods
+  this.addEventListener = THREE.EventDispatcher.prototype.addEventListener;
+  this.removeEventListener = THREE.EventDispatcher.prototype.removeEventListener;
+  this.dispatchEvent = THREE.EventDispatcher.prototype.dispatchEvent;
+  this._listeners = {};
+
   // add event listeners
   this.addEventListener('mousedown', onMouseDown);
   this.addEventListener('mouseup', onMouseUp);
@@ -5043,8 +5058,6 @@ ROS3D.OrbitControls.prototype.update = function() {
   }
 };
 
-Object.assign(ROS3D.OrbitControls.prototype, THREE.EventDispatcher.prototype);
-
 /**
  * @author Jihoon Lee - jihoonlee.in@gmail.com
  * @author Russell Toris - rctoris@wpi.edu
@@ -5118,6 +5131,8 @@ ROS3D.SceneNode.prototype.unsubscribeTf = function() {
  * @author Jihoon Lee - jihoonlee.in@gmail.com
  */
 
+// TEST: This comment was added to test npm link + grunt dev auto-rebuild
+
 /**
  * A Viewer can be used to render an interactive 3D scene to a HTML5 canvas.
  *
@@ -5180,7 +5195,7 @@ ROS3D.Viewer = function(options) {
   this.cameraControls.userZoomSpeed = cameraZoomSpeed;
 
   // lights
-  this.scene.add(new THREE.AmbientLight(0x555555));
+  this.scene.add(new THREE.AmbientLight(0x555555, 1.0));
   this.directionalLight = new THREE.DirectionalLight(0xffffff, intensity);
   this.scene.add(this.directionalLight);
 
@@ -5204,7 +5219,6 @@ ROS3D.Viewer = function(options) {
 
   // add the renderer to the page
   document.getElementById(divID).appendChild(this.renderer.domElement);
-
   // begin the render loop
   this.start();
 };
