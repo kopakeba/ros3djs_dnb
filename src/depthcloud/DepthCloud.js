@@ -20,7 +20,12 @@
  */
 ROS3D.DepthCloud = function(options) {
   options = options || {};
-  THREE.Object3D.call(this);
+  
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   this.url = options.url;
   this.streamType = options.streamType || 'vp8';
@@ -219,7 +224,10 @@ ROS3D.DepthCloud = function(options) {
     '}'
     ].join('\n');
 };
-ROS3D.DepthCloud.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.DepthCloud.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.DepthCloud.prototype.constructor = ROS3D.DepthCloud;
 
 /**
  * Callback called when video metadata is ready

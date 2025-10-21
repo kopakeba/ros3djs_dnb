@@ -39,13 +39,57 @@ ROS3D.Viewer = function(options) {
     z : 3
   };
   var cameraZoomSpeed = options.cameraZoomSpeed || 0.5;
+  var useWebGPU = options.useWebGPU || false;
+  var fallbackToWebGL = options.fallbackToWebGL !== false;
   this.maxFps = options.maxFps;
 
   // create the canvas to render to
-  this.renderer = new THREE.WebGLRenderer({
-    antialias : antialias,
-    alpha: true
-  });
+  console.log('WebGPU requested:', useWebGPU);
+  console.log('THREE.WebGPURenderer available:', typeof THREE.WebGPURenderer !== 'undefined');
+  console.log('Navigator GPU available:', !!navigator.gpu);
+  
+  if (useWebGPU && typeof THREE.WebGPURenderer !== 'undefined') {
+    try {
+      this.renderer = new THREE.WebGPURenderer({
+        antialias : antialias,
+        alpha: true
+      });
+      
+      // Initialize WebGPU renderer asynchronously
+      this.renderer.init().then(() => {
+        console.log('🚀 Using WebGPU renderer (initialized)');
+      }).catch((error) => {
+        console.error('WebGPU initialization failed:', error);
+      });
+      
+      console.log('🚀 Using WebGPU renderer (initializing...)');
+    } catch (error) {
+      console.warn('WebGPU renderer creation failed:', error);
+      if (fallbackToWebGL) {
+        console.log('🔄 Falling back to WebGL renderer');
+        this.renderer = new THREE.WebGLRenderer({
+          antialias : antialias,
+          alpha: true
+        });
+      } else {
+        throw error;
+      }
+    }
+  } else {
+    if (useWebGPU) {
+      if (typeof THREE.WebGPURenderer === 'undefined') {
+        console.warn('⚠️ WebGPU requested but THREE.WebGPURenderer not available in this Three.js version');
+      }
+      if (!navigator.gpu) {
+        console.warn('⚠️ WebGPU requested but not supported by this browser');
+      }
+    }
+    console.log('🔄 Using WebGL renderer');
+    this.renderer = new THREE.WebGLRenderer({
+      antialias : antialias,
+      alpha: true
+    });
+  }
   this.renderer.setClearColor(parseInt(background.replace('#', '0x'), 16), alpha);
   this.renderer.sortObjects = false;
   this.renderer.setSize(width, height);
@@ -107,7 +151,7 @@ ROS3D.Viewer.prototype.start = function(){
 /**
  * Renders the associated scene to the viewer.
  */
-ROS3D.Viewer.prototype.draw = function(){
+ROS3D.Viewer.prototype.draw = async function(){
   if(this.stopped){
     // Do nothing if stopped
     return;
@@ -120,10 +164,25 @@ ROS3D.Viewer.prototype.draw = function(){
   var cameraPos = this.camera.localToWorld(new THREE.Vector3(-1, 1, 0)).normalize();
   this.directionalLight.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
 
-  // set the scene
-  this.renderer.clear(true, true, true);
-  this.renderer.render(this.scene, this.camera);
-  this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
+  // set the scene - handle WebGPU async operations
+  if (this.renderer.isWebGPURenderer) {
+    // Use async operations for WebGPU
+    try {
+      await this.renderer.clearAsync();
+      await this.renderer.renderAsync(this.scene, this.camera);
+      this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
+    } catch (error) {
+      console.warn('WebGPU render error:', error);
+      // Fall back to sync operations if async fails
+      this.renderer.render(this.scene, this.camera);
+      this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
+    }
+  } else {
+    // Use sync operations for WebGL
+    this.renderer.clear(true, true, true);
+    this.renderer.render(this.scene, this.camera);
+    this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
+  }
 
   // draw the frame
   if(this.maxFps) {

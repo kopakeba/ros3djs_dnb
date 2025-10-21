@@ -23,14 +23,20 @@ ROS3D.PoseArray = function(options) {
   this.color = options.color || 0xcc00ff;
   this.length = options.length || 1.0;
   this.rootObject = options.rootObject || new THREE.Object3D();
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   this.sn = null;
 
   this.rosTopic = undefined;
   this.subscribe();
 };
-ROS3D.PoseArray.prototype.__proto__ = THREE.Object3D.prototype;
+// Set up inheritance from THREE.Object3D
+ROS3D.PoseArray.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.PoseArray.prototype.constructor = ROS3D.PoseArray;
 
 
 ROS3D.PoseArray.prototype.unsubscribe = function(){

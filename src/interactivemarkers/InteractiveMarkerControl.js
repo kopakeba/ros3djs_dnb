@@ -17,7 +17,12 @@
  */
 ROS3D.InteractiveMarkerControl = function(options) {
   var that = this;
-  THREE.Object3D.call(this);
+  
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   options = options || {};
   this.parent = options.parent;
@@ -241,4 +246,7 @@ ROS3D.InteractiveMarkerControl = function(options) {
 
   localTfClient.dispose();
 };
-ROS3D.InteractiveMarkerControl.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.InteractiveMarkerControl.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.InteractiveMarkerControl.prototype.constructor = ROS3D.InteractiveMarkerControl;

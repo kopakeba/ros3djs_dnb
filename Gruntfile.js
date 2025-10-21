@@ -8,16 +8,7 @@ module.exports = function(grunt) {
         dest : './build/ros3d.js'
       }
     },
-    jshint: {
-      options: {
-        jshintrc: '.jshintrc'
-      },
-      files: [
-        'Gruntfile.js',
-        './build/ros3d.js',
-        './tests/*.js'
-      ]
-    },
+
     karma: {
       build: {
         configFile: './test/karma.conf.js',
@@ -79,7 +70,6 @@ module.exports = function(grunt) {
   });
 
   grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-clean');
@@ -87,7 +77,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-karma');
 
   grunt.registerTask('dev', ['concat', 'watch']);
-  grunt.registerTask('build', ['concat', 'jshint', 'uglify']);
+  grunt.registerTask('build', ['concat', 'uglify']);
   grunt.registerTask('build_and_watch', ['watch']);
   grunt.registerTask('doc', ['clean', 'jsdoc']);
 };

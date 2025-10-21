@@ -21,7 +21,12 @@ ROS3D.SceneNode = function(options) {
   this.frameID = options.frameID;
   var object = options.object;
   this.pose = options.pose || new ROSLIB.Pose();
-  THREE.Object3D.call(this);
+  
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   // Do not render this object until we receive a TF update
   this.visible = false;
@@ -48,7 +53,10 @@ ROS3D.SceneNode = function(options) {
   // listen for TF updates
   this.tfClient.subscribe(this.frameID, this.tfUpdate);
 };
-ROS3D.SceneNode.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.SceneNode.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.SceneNode.prototype.constructor = ROS3D.SceneNode;
 
 /**
  * Set the pose of the associated model.

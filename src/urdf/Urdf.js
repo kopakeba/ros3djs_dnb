@@ -24,7 +24,11 @@ ROS3D.Urdf = function(options) {
   var tfPrefix = options.tfPrefix || '';
   var loader = options.loader || ROS3D.COLLADA_LOADER_2;
 
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   // load all models
   var links = urdfModel.links;
@@ -113,7 +117,10 @@ ROS3D.Urdf = function(options) {
     }
   }
 };
-ROS3D.Urdf.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.Urdf.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Urdf.prototype.constructor = ROS3D.Urdf;
 
 ROS3D.Urdf.prototype.unsubscribeTf = function () {
   this.children.forEach(function(n) {

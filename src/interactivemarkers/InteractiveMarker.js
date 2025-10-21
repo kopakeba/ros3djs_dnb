@@ -15,8 +15,20 @@
  *                        ROS3D.COLLADA_LOADER_2) -- defaults to ROS3D.COLLADA_LOADER_2
  */
 ROS3D.InteractiveMarker = function(options) {
-  THREE.Object3D.call(this);
-  THREE.EventDispatcher.call(this);
+  // Create temporary objects to copy properties from
+  var tempObj = new THREE.Object3D();
+  var tempDispatcher = new THREE.EventDispatcher();
+  
+  // Copy Object3D properties
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
+  
+  // Copy EventDispatcher methods
+  this.addEventListener = tempDispatcher.addEventListener.bind(this);
+  this.hasEventListener = tempDispatcher.hasEventListener.bind(this);
+  this.removeEventListener = tempDispatcher.removeEventListener.bind(this);
+  this.dispatchEvent = tempDispatcher.dispatchEvent.bind(this);
 
   var that = this;
   options = options || {};
@@ -66,7 +78,10 @@ ROS3D.InteractiveMarker = function(options) {
     });
   }
 };
-ROS3D.InteractiveMarker.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.InteractiveMarker.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.InteractiveMarker.prototype.constructor = ROS3D.InteractiveMarker;
 
 /**
  * Show the interactive marker menu associated with this marker.
@@ -313,5 +328,3 @@ ROS3D.InteractiveMarker.prototype.dispose = function() {
     that.remove(intMarkerControl);
   });
 };
-
-Object.assign(ROS3D.InteractiveMarker.prototype, THREE.EventDispatcher.prototype);

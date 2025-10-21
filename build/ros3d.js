@@ -188,7 +188,12 @@ ROS3D.closestAxisPoint = function(axisRay, camera, mousePos) {
  */
 ROS3D.DepthCloud = function(options) {
   options = options || {};
-  THREE.Object3D.call(this);
+  
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   this.url = options.url;
   this.streamType = options.streamType || 'vp8';
@@ -387,7 +392,10 @@ ROS3D.DepthCloud = function(options) {
     '}'
     ].join('\n');
 };
-ROS3D.DepthCloud.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.DepthCloud.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.DepthCloud.prototype.constructor = ROS3D.DepthCloud;
 
 /**
  * Callback called when video metadata is ready
@@ -508,8 +516,20 @@ ROS3D.DepthCloud.prototype.stopStream = function() {
  *                        ROS3D.COLLADA_LOADER_2) -- defaults to ROS3D.COLLADA_LOADER_2
  */
 ROS3D.InteractiveMarker = function(options) {
-  THREE.Object3D.call(this);
-  THREE.EventDispatcher.call(this);
+  // Create temporary objects to copy properties from
+  var tempObj = new THREE.Object3D();
+  var tempDispatcher = new THREE.EventDispatcher();
+  
+  // Copy Object3D properties
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
+  
+  // Copy EventDispatcher methods
+  this.addEventListener = tempDispatcher.addEventListener.bind(this);
+  this.hasEventListener = tempDispatcher.hasEventListener.bind(this);
+  this.removeEventListener = tempDispatcher.removeEventListener.bind(this);
+  this.dispatchEvent = tempDispatcher.dispatchEvent.bind(this);
 
   var that = this;
   options = options || {};
@@ -559,7 +579,10 @@ ROS3D.InteractiveMarker = function(options) {
     });
   }
 };
-ROS3D.InteractiveMarker.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.InteractiveMarker.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.InteractiveMarker.prototype.constructor = ROS3D.InteractiveMarker;
 
 /**
  * Show the interactive marker menu associated with this marker.
@@ -807,8 +830,6 @@ ROS3D.InteractiveMarker.prototype.dispose = function() {
   });
 };
 
-Object.assign(ROS3D.InteractiveMarker.prototype, THREE.EventDispatcher.prototype);
-
 /**
  * @author David Gossow - dgossow@willowgarage.com
  */
@@ -1036,7 +1057,12 @@ ROS3D.InteractiveMarkerClient.prototype.eraseIntMarker = function(intMarkerName)
  */
 ROS3D.InteractiveMarkerControl = function(options) {
   var that = this;
-  THREE.Object3D.call(this);
+  
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   options = options || {};
   this.parent = options.parent;
@@ -1260,7 +1286,10 @@ ROS3D.InteractiveMarkerControl = function(options) {
 
   localTfClient.dispose();
 };
-ROS3D.InteractiveMarkerControl.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.InteractiveMarkerControl.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.InteractiveMarkerControl.prototype.constructor = ROS3D.InteractiveMarkerControl;
 
 /**
  * @author David Gossow - dgossow@willowgarage.com
@@ -1485,7 +1514,14 @@ ROS3D.InteractiveMarkerMenu = function(options) {
     children : []
   };
 
-  THREE.EventDispatcher.call(this);
+  // Create temporary EventDispatcher to copy methods from
+  var tempDispatcher = new THREE.EventDispatcher();
+  
+  // Copy EventDispatcher methods
+  this.addEventListener = tempDispatcher.addEventListener.bind(this);
+  this.hasEventListener = tempDispatcher.hasEventListener.bind(this);
+  this.removeEventListener = tempDispatcher.removeEventListener.bind(this);
+  this.dispatchEvent = tempDispatcher.dispatchEvent.bind(this);
 
   // create the CSS for this marker if it has not been created
   if (document.getElementById('default-interactive-marker-menu-css') === null) {
@@ -1634,8 +1670,6 @@ ROS3D.InteractiveMarkerMenu.prototype.hide = function(event) {
   document.body.removeChild(this.menuDomElem);
 };
 
-Object.assign(ROS3D.InteractiveMarkerMenu.prototype, THREE.EventDispatcher.prototype);
-
 /**
  * @author David Gossow - dgossow@willowgarage.com
  * @author Russell Toris - rctoris@wpi.edu
@@ -1660,7 +1694,11 @@ ROS3D.Marker = function(options) {
     path += '/';
   }
 
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
   
   if(message.scale) {
     this.msgScale = [message.scale.x, message.scale.y, message.scale.z];
@@ -1967,7 +2005,10 @@ ROS3D.Marker = function(options) {
       break;
   }
 };
-ROS3D.Marker.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.Marker.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Marker.prototype.constructor = ROS3D.Marker;
 
 /**
  * Set the pose of this marker to the given values.
@@ -2615,7 +2656,11 @@ ROS3D.Grid = function(options) {
   var lineWidth = options.lineWidth || 1;
   var cellSize = options.cellSize || 1;
 
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   var material = new THREE.LineBasicMaterial({
     color: color,
@@ -2640,7 +2685,9 @@ ROS3D.Grid = function(options) {
   }
 };
 
-ROS3D.Grid.prototype.__proto__ = THREE.Object3D.prototype;
+// Set up inheritance from THREE.Object3D
+ROS3D.Grid.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Grid.prototype.constructor = ROS3D.Grid;
 
 /**
  * @author Jihoon Lee - jihoonlee.in@gmail.com
@@ -2668,7 +2715,11 @@ ROS3D.MeshResource = function(options) {
   this.warnings = options.warnings;
   this.state = 'loading';
 
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   // check for a trailing '/'
   if (path.substr(path.length - 1) !== '/') {
@@ -2736,7 +2787,9 @@ ROS3D.MeshResource = function(options) {
     that.state = 'error';
   }
 };
-ROS3D.MeshResource.prototype.__proto__ = THREE.Object3D.prototype;
+// Set up inheritance from THREE.Object3D
+ROS3D.MeshResource.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.MeshResource.prototype.constructor = ROS3D.MeshResource;
 
 /**
  * @author David Gossow - dgossow@willowgarage.com
@@ -2758,7 +2811,11 @@ ROS3D.TriangleList = function(options) {
   var vertices = options.vertices;
   var colors = options.colors;
 
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   // set the material to be double sided
   material.side = THREE.DoubleSide;
@@ -2805,7 +2862,9 @@ ROS3D.TriangleList = function(options) {
 
   this.add(new THREE.Mesh(geometry, material));
 };
-ROS3D.TriangleList.prototype.__proto__ = THREE.Object3D.prototype;
+// Set up inheritance from THREE.Object3D
+ROS3D.TriangleList.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.TriangleList.prototype.constructor = ROS3D.TriangleList;
 
 /**
  * Set the color of this object to the given hex value.
@@ -3036,14 +3095,22 @@ ROS3D.Odometry = function(options) {
   this.length = options.length || 1.0;
   this.rootObject = options.rootObject || new THREE.Object3D();
   this.keep = options.keep || 1;
-  THREE.Object3D.call(this);
+  
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   this.sns = [];
 
   this.rosTopic = undefined;
   this.subscribe();
 };
-ROS3D.Odometry.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.Odometry.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Odometry.prototype.constructor = ROS3D.Odometry;
 
 
 ROS3D.Odometry.prototype.unsubscribe = function(){
@@ -3113,7 +3180,11 @@ ROS3D.Path = function(options) {
   this.tfClient = options.tfClient;
   this.color = options.color || 0xcc00ff;
   this.rootObject = options.rootObject || new THREE.Object3D();
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   this.sn = null;
   this.line = null;
@@ -3121,7 +3192,9 @@ ROS3D.Path = function(options) {
   this.rosTopic = undefined;
   this.subscribe();
 };
-ROS3D.Path.prototype.__proto__ = THREE.Object3D.prototype;
+// Set up inheritance from THREE.Object3D
+ROS3D.Path.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Path.prototype.constructor = ROS3D.Path;
 
 
 ROS3D.Path.prototype.unsubscribe = function(){
@@ -3193,14 +3266,20 @@ ROS3D.Point = function(options) {
   this.color = options.color || 0xcc00ff;
   this.rootObject = options.rootObject || new THREE.Object3D();
   this.radius = options.radius || 0.2;
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   this.sn = null;
 
   this.rosTopic = undefined;
   this.subscribe();
 };
-ROS3D.Point.prototype.__proto__ = THREE.Object3D.prototype;
+// Set up inheritance from THREE.Object3D
+ROS3D.Point.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Point.prototype.constructor = ROS3D.Point;
 
 
 ROS3D.Point.prototype.unsubscribe = function(){
@@ -3264,7 +3343,11 @@ ROS3D.Polygon = function(options) {
   this.tfClient = options.tfClient;
   this.color = options.color || 0xcc00ff;
   this.rootObject = options.rootObject || new THREE.Object3D();
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   this.sn = null;
   this.line = null;
@@ -3272,7 +3355,9 @@ ROS3D.Polygon = function(options) {
   this.rosTopic = undefined;
   this.subscribe();
 };
-ROS3D.Polygon.prototype.__proto__ = THREE.Object3D.prototype;
+// Set up inheritance from THREE.Object3D
+ROS3D.Polygon.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Polygon.prototype.constructor = ROS3D.Polygon;
 
 
 ROS3D.Polygon.prototype.unsubscribe = function(){
@@ -3349,14 +3434,20 @@ ROS3D.Pose = function(options) {
   this.tfClient = options.tfClient;
   this.color = options.color || 0xcc00ff;
   this.rootObject = options.rootObject || new THREE.Object3D();
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   this.sn = null;
 
   this.rosTopic = undefined;
   this.subscribe();
 };
-ROS3D.Pose.prototype.__proto__ = THREE.Object3D.prototype;
+// Set up inheritance from THREE.Object3D
+ROS3D.Pose.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Pose.prototype.constructor = ROS3D.Pose;
 
 
 ROS3D.Pose.prototype.unsubscribe = function(){
@@ -3427,14 +3518,20 @@ ROS3D.PoseArray = function(options) {
   this.color = options.color || 0xcc00ff;
   this.length = options.length || 1.0;
   this.rootObject = options.rootObject || new THREE.Object3D();
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   this.sn = null;
 
   this.rosTopic = undefined;
   this.subscribe();
 };
-ROS3D.PoseArray.prototype.__proto__ = THREE.Object3D.prototype;
+// Set up inheritance from THREE.Object3D
+ROS3D.PoseArray.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.PoseArray.prototype.constructor = ROS3D.PoseArray;
 
 
 ROS3D.PoseArray.prototype.unsubscribe = function(){
@@ -3525,14 +3622,20 @@ ROS3D.PoseWithCovariance = function(options) {
   this.tfClient = options.tfClient;
   this.color = options.color || 0xcc00ff;
   this.rootObject = options.rootObject || new THREE.Object3D();
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   this.sn = null;
 
   this.rosTopic = undefined;
   this.subscribe();
 };
-ROS3D.PoseWithCovariance.prototype.__proto__ = THREE.Object3D.prototype;
+// Set up inheritance from THREE.Object3D
+ROS3D.PoseWithCovariance.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.PoseWithCovariance.prototype.constructor = ROS3D.PoseWithCovariance;
 
 
 ROS3D.PoseWithCovariance.prototype.unsubscribe = function(){
@@ -3893,7 +3996,11 @@ ROS3D.Points = function(options) {
   this.material = options.material || {};
   this.colorsrc = options.colorsrc;
   this.colormap = options.colormap;
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   if(('color' in options) || ('size' in options) || ('texture' in options)) {
       console.warn(
@@ -3906,6 +4013,10 @@ ROS3D.Points = function(options) {
   this.sn = null;
   this.buffer = null;
 };
+
+// Set up inheritance from THREE.Object3D
+ROS3D.Points.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Points.prototype.constructor = ROS3D.Points;
 
 ROS3D.Points.prototype.setup = function(frame, point_step, fields)
 {
@@ -4009,7 +4120,11 @@ ROS3D.Urdf = function(options) {
   var tfPrefix = options.tfPrefix || '';
   var loader = options.loader || ROS3D.COLLADA_LOADER_2;
 
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   // load all models
   var links = urdfModel.links;
@@ -4098,7 +4213,10 @@ ROS3D.Urdf = function(options) {
     }
   }
 };
-ROS3D.Urdf.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.Urdf.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Urdf.prototype.constructor = ROS3D.Urdf;
 
 ROS3D.Urdf.prototype.unsubscribeTf = function () {
   this.children.forEach(function(n) {
@@ -5081,7 +5199,12 @@ ROS3D.SceneNode = function(options) {
   this.frameID = options.frameID;
   var object = options.object;
   this.pose = options.pose || new ROSLIB.Pose();
-  THREE.Object3D.call(this);
+  
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   // Do not render this object until we receive a TF update
   this.visible = false;
@@ -5108,7 +5231,10 @@ ROS3D.SceneNode = function(options) {
   // listen for TF updates
   this.tfClient.subscribe(this.frameID, this.tfUpdate);
 };
-ROS3D.SceneNode.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.SceneNode.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.SceneNode.prototype.constructor = ROS3D.SceneNode;
 
 /**
  * Set the pose of the associated model.
@@ -5166,13 +5292,57 @@ ROS3D.Viewer = function(options) {
     z : 3
   };
   var cameraZoomSpeed = options.cameraZoomSpeed || 0.5;
+  var useWebGPU = options.useWebGPU || false;
+  var fallbackToWebGL = options.fallbackToWebGL !== false;
   this.maxFps = options.maxFps;
 
   // create the canvas to render to
-  this.renderer = new THREE.WebGLRenderer({
-    antialias : antialias,
-    alpha: true
-  });
+  console.log('WebGPU requested:', useWebGPU);
+  console.log('THREE.WebGPURenderer available:', typeof THREE.WebGPURenderer !== 'undefined');
+  console.log('Navigator GPU available:', !!navigator.gpu);
+  
+  if (useWebGPU && typeof THREE.WebGPURenderer !== 'undefined') {
+    try {
+      this.renderer = new THREE.WebGPURenderer({
+        antialias : antialias,
+        alpha: true
+      });
+      
+      // Initialize WebGPU renderer asynchronously
+      this.renderer.init().then(() => {
+        console.log('🚀 Using WebGPU renderer (initialized)');
+      }).catch((error) => {
+        console.error('WebGPU initialization failed:', error);
+      });
+      
+      console.log('🚀 Using WebGPU renderer (initializing...)');
+    } catch (error) {
+      console.warn('WebGPU renderer creation failed:', error);
+      if (fallbackToWebGL) {
+        console.log('🔄 Falling back to WebGL renderer');
+        this.renderer = new THREE.WebGLRenderer({
+          antialias : antialias,
+          alpha: true
+        });
+      } else {
+        throw error;
+      }
+    }
+  } else {
+    if (useWebGPU) {
+      if (typeof THREE.WebGPURenderer === 'undefined') {
+        console.warn('⚠️ WebGPU requested but THREE.WebGPURenderer not available in this Three.js version');
+      }
+      if (!navigator.gpu) {
+        console.warn('⚠️ WebGPU requested but not supported by this browser');
+      }
+    }
+    console.log('🔄 Using WebGL renderer');
+    this.renderer = new THREE.WebGLRenderer({
+      antialias : antialias,
+      alpha: true
+    });
+  }
   this.renderer.setClearColor(parseInt(background.replace('#', '0x'), 16), alpha);
   this.renderer.sortObjects = false;
   this.renderer.setSize(width, height);
@@ -5234,7 +5404,7 @@ ROS3D.Viewer.prototype.start = function(){
 /**
  * Renders the associated scene to the viewer.
  */
-ROS3D.Viewer.prototype.draw = function(){
+ROS3D.Viewer.prototype.draw = async function(){
   if(this.stopped){
     // Do nothing if stopped
     return;
@@ -5247,10 +5417,25 @@ ROS3D.Viewer.prototype.draw = function(){
   var cameraPos = this.camera.localToWorld(new THREE.Vector3(-1, 1, 0)).normalize();
   this.directionalLight.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
 
-  // set the scene
-  this.renderer.clear(true, true, true);
-  this.renderer.render(this.scene, this.camera);
-  this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
+  // set the scene - handle WebGPU async operations
+  if (this.renderer.isWebGPURenderer) {
+    // Use async operations for WebGPU
+    try {
+      await this.renderer.clearAsync();
+      await this.renderer.renderAsync(this.scene, this.camera);
+      this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
+    } catch (error) {
+      console.warn('WebGPU render error:', error);
+      // Fall back to sync operations if async fails
+      this.renderer.render(this.scene, this.camera);
+      this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
+    }
+  } else {
+    // Use sync operations for WebGL
+    this.renderer.clear(true, true, true);
+    this.renderer.render(this.scene, this.camera);
+    this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
+  }
 
   // draw the frame
   if(this.maxFps) {

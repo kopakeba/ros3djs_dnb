@@ -29,7 +29,11 @@ ROS3D.Points = function(options) {
   this.material = options.material || {};
   this.colorsrc = options.colorsrc;
   this.colormap = options.colormap;
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   if(('color' in options) || ('size' in options) || ('texture' in options)) {
       console.warn(
@@ -42,6 +46,10 @@ ROS3D.Points = function(options) {
   this.sn = null;
   this.buffer = null;
 };
+
+// Set up inheritance from THREE.Object3D
+ROS3D.Points.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Points.prototype.constructor = ROS3D.Points;
 
 ROS3D.Points.prototype.setup = function(frame, point_step, fields)
 {

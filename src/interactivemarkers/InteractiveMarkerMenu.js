@@ -29,7 +29,14 @@ ROS3D.InteractiveMarkerMenu = function(options) {
     children : []
   };
 
-  THREE.EventDispatcher.call(this);
+  // Create temporary EventDispatcher to copy methods from
+  var tempDispatcher = new THREE.EventDispatcher();
+  
+  // Copy EventDispatcher methods
+  this.addEventListener = tempDispatcher.addEventListener.bind(this);
+  this.hasEventListener = tempDispatcher.hasEventListener.bind(this);
+  this.removeEventListener = tempDispatcher.removeEventListener.bind(this);
+  this.dispatchEvent = tempDispatcher.dispatchEvent.bind(this);
 
   // create the CSS for this marker if it has not been created
   if (document.getElementById('default-interactive-marker-menu-css') === null) {
@@ -177,5 +184,3 @@ ROS3D.InteractiveMarkerMenu.prototype.hide = function(event) {
   document.body.removeChild(this.overlayDomElem);
   document.body.removeChild(this.menuDomElem);
 };
-
-Object.assign(ROS3D.InteractiveMarkerMenu.prototype, THREE.EventDispatcher.prototype);

@@ -22,7 +22,11 @@ ROS3D.Marker = function(options) {
     path += '/';
   }
 
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
   
   if(message.scale) {
     this.msgScale = [message.scale.x, message.scale.y, message.scale.z];
@@ -329,7 +333,10 @@ ROS3D.Marker = function(options) {
       break;
   }
 };
-ROS3D.Marker.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.Marker.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Marker.prototype.constructor = ROS3D.Marker;
 
 /**
  * Set the pose of this marker to the given values.

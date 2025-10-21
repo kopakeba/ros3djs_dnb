@@ -28,14 +28,22 @@ ROS3D.Odometry = function(options) {
   this.length = options.length || 1.0;
   this.rootObject = options.rootObject || new THREE.Object3D();
   this.keep = options.keep || 1;
-  THREE.Object3D.call(this);
+  
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   this.sns = [];
 
   this.rosTopic = undefined;
   this.subscribe();
 };
-ROS3D.Odometry.prototype.__proto__ = THREE.Object3D.prototype;
+
+// Set up inheritance from THREE.Object3D
+ROS3D.Odometry.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Odometry.prototype.constructor = ROS3D.Odometry;
 
 
 ROS3D.Odometry.prototype.unsubscribe = function(){

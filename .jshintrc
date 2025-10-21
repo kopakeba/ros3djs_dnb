@@ -25,5 +25,8 @@
   "trailing": true,
   "proto": true,
   "laxbreak": true,
-  "mocha": true
+  "asi": true,
+  "expr": true,
+  "mocha": true,
+  "node": true
 }

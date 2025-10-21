@@ -18,7 +18,11 @@ ROS3D.TriangleList = function(options) {
   var vertices = options.vertices;
   var colors = options.colors;
 
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   // set the material to be double sided
   material.side = THREE.DoubleSide;
@@ -65,7 +69,9 @@ ROS3D.TriangleList = function(options) {
 
   this.add(new THREE.Mesh(geometry, material));
 };
-ROS3D.TriangleList.prototype.__proto__ = THREE.Object3D.prototype;
+// Set up inheritance from THREE.Object3D
+ROS3D.TriangleList.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.TriangleList.prototype.constructor = ROS3D.TriangleList;
 
 /**
  * Set the color of this object to the given hex value.

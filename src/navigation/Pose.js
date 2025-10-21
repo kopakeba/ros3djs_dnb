@@ -25,14 +25,20 @@ ROS3D.Pose = function(options) {
   this.tfClient = options.tfClient;
   this.color = options.color || 0xcc00ff;
   this.rootObject = options.rootObject || new THREE.Object3D();
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   this.sn = null;
 
   this.rosTopic = undefined;
   this.subscribe();
 };
-ROS3D.Pose.prototype.__proto__ = THREE.Object3D.prototype;
+// Set up inheritance from THREE.Object3D
+ROS3D.Pose.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Pose.prototype.constructor = ROS3D.Pose;
 
 
 ROS3D.Pose.prototype.unsubscribe = function(){

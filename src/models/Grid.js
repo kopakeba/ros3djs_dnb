@@ -20,7 +20,11 @@ ROS3D.Grid = function(options) {
   var lineWidth = options.lineWidth || 1;
   var cellSize = options.cellSize || 1;
 
-  THREE.Object3D.call(this);
+  // Create a temporary Object3D to copy properties from
+  var tempObj = new THREE.Object3D();
+  Object.keys(tempObj).forEach(function(key) {
+    this[key] = tempObj[key];
+  }.bind(this));
 
   var material = new THREE.LineBasicMaterial({
     color: color,
@@ -45,4 +49,6 @@ ROS3D.Grid = function(options) {
   }
 };
 
-ROS3D.Grid.prototype.__proto__ = THREE.Object3D.prototype;
+// Set up inheritance from THREE.Object3D
+ROS3D.Grid.prototype = Object.create(THREE.Object3D.prototype);
+ROS3D.Grid.prototype.constructor = ROS3D.Grid;
