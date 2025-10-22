@@ -1690,7 +1690,6 @@ ROS3D.InteractiveMarkerMenu.prototype.hide = function(event) {
  *   * message - the marker message
  */
 ROS3D.Marker = function(options) {
-
   options = options || {};
   var path = options.path || '/';
   var message = options.message;

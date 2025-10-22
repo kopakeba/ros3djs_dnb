@@ -3361,7 +3361,8 @@ THREE.ColladaLoader.prototype = {
 
 		}
 
-		console.time( 'THREE.ColladaLoader' );
+		var mainTimerId = 'THREE.ColladaLoader' + Date.now();
+		console.time( mainTimerId );
 
 		if ( text.length === 0 ) {
 
@@ -3410,7 +3411,8 @@ THREE.ColladaLoader.prototype = {
 			kinematicsScenes: {}
 		};
 
-		console.time( 'THREE.ColladaLoader: Parse' );
+		var parseTimerId = 'THREE.ColladaLoader: Parse' + Date.now();
+		console.time( parseTimerId );
 
 		parseLibrary( collada, 'library_animations', 'animation', parseAnimation );
 		parseLibrary( collada, 'library_animation_clips', 'animation_clip', parseAnimationClip );
@@ -3426,9 +3428,10 @@ THREE.ColladaLoader.prototype = {
 		parseLibrary( collada, 'library_kinematics_models', 'kinematics_model', parseKinematicsModel );
 		parseLibrary( collada, 'scene', 'instance_kinematics_scene', parseKinematicsScene );
 
-		console.timeEnd( 'THREE.ColladaLoader: Parse' );
+		console.timeEnd( parseTimerId );
 
-		console.time( 'THREE.ColladaLoader: Build' );
+		var timerId = 'THREE.ColladaLoader: Build' + Date.now();
+		console.time( timerId );
 
 		buildLibrary( library.animations, buildAnimation );
 		buildLibrary( library.clips, buildAnimationClip );
@@ -3441,7 +3444,7 @@ THREE.ColladaLoader.prototype = {
 		buildLibrary( library.geometries, buildGeometry );
 		buildLibrary( library.visualScenes, buildVisualScene );
 
-		console.timeEnd( 'THREE.ColladaLoader: Build' );
+		console.timeEnd( timerId );
 
 		setupAnimations();
 		setupKinematics();
@@ -3461,7 +3464,7 @@ THREE.ColladaLoader.prototype = {
 
 		scene.scale.multiplyScalar( asset.unit );
 
-		console.timeEnd( 'THREE.ColladaLoader' );
+		console.timeEnd( mainTimerId );
 
 		return {
 			animations: animations,
