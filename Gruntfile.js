@@ -6,6 +6,10 @@ module.exports = function(grunt) {
       build: {
         src  : ['./src/*.js', './src/**/*.js'],
         dest : './build/ros3d.js'
+      },
+      build_with_three: {
+        src  : ['./node_modules/three/build/three.webgpu.js', './src/*.js', './src/**/*.js'],
+        dest : './build/ros3d.with-three.js'
       }
     },
 
@@ -78,6 +82,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('dev', ['concat', 'watch']);
   grunt.registerTask('build', ['concat', 'uglify']);
+  grunt.registerTask('build-with-three', ['concat:build_with_three']);
   grunt.registerTask('build_and_watch', ['watch']);
   grunt.registerTask('doc', ['clean', 'jsdoc']);
 };

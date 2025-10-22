@@ -2088,13 +2088,13 @@ THREE.ColladaLoader.prototype = {
 
 			// build geometry
 
-			if ( position.array.length > 0 ) geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( position.array, position.stride ) );
-			if ( normal.array.length > 0 ) geometry.addAttribute( 'normal', new THREE.Float32BufferAttribute( normal.array, normal.stride ) );
-			if ( color.array.length > 0 ) geometry.addAttribute( 'color', new THREE.Float32BufferAttribute( color.array, color.stride ) );
-			if ( uv.array.length > 0 ) geometry.addAttribute( 'uv', new THREE.Float32BufferAttribute( uv.array, uv.stride ) );
+			if ( position.array.length > 0 ) geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( position.array, position.stride ) );
+			if ( normal.array.length > 0 ) geometry.setAttribute( 'normal', new THREE.Float32BufferAttribute( normal.array, normal.stride ) );
+			if ( color.array.length > 0 ) geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( color.array, color.stride ) );
+			if ( uv.array.length > 0 ) geometry.setAttribute( 'uv', new THREE.Float32BufferAttribute( uv.array, uv.stride ) );
 
-			if ( skinIndex.array.length > 0 ) geometry.addAttribute( 'skinIndex', new THREE.Float32BufferAttribute( skinIndex.array, skinIndex.stride ) );
-			if ( skinWeight.array.length > 0 ) geometry.addAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeight.array, skinWeight.stride ) );
+			if ( skinIndex.array.length > 0 ) geometry.setAttribute( 'skinIndex', new THREE.Float32BufferAttribute( skinIndex.array, skinIndex.stride ) );
+			if ( skinWeight.array.length > 0 ) geometry.setAttribute( 'skinWeight', new THREE.Float32BufferAttribute( skinWeight.array, skinWeight.stride ) );
 
 			build.data = geometry;
 			build.type = primitives[ 0 ].type;
@@ -2429,7 +2429,7 @@ THREE.ColladaLoader.prototype = {
 				case 'rotate':
 					data.obj = new THREE.Vector3();
 					data.obj.fromArray( array );
-					data.angle = THREE.Math.degToRad( array[ 3 ] );
+					data.angle = THREE.MathUtils.degToRad( array[ 3 ] );
 					break;
 
 			}
@@ -2625,7 +2625,7 @@ THREE.ColladaLoader.prototype = {
 									switch ( joint.type ) {
 
 										case 'revolute':
-											matrix.multiply( m0.makeRotationAxis( axis, THREE.Math.degToRad( value ) ) );
+											matrix.multiply( m0.makeRotationAxis( axis, THREE.MathUtils.degToRad( value ) ) );
 											break;
 
 										case 'prismatic':
@@ -2721,7 +2721,7 @@ THREE.ColladaLoader.prototype = {
 					case 'rotate':
 						var array = parseFloats( child.textContent );
 						var vector = new THREE.Vector3().fromArray( array );
-						var angle = THREE.Math.degToRad( array[ 3 ] );
+						var angle = THREE.MathUtils.degToRad( array[ 3 ] );
 						transforms.push( {
 							sid: child.getAttribute( 'sid' ),
 							type: child.nodeName,
@@ -2828,7 +2828,7 @@ THREE.ColladaLoader.prototype = {
 
 					case 'rotate':
 						var array = parseFloats( child.textContent );
-						var angle = THREE.Math.degToRad( array[ 3 ] );
+						var angle = THREE.MathUtils.degToRad( array[ 3 ] );
 						data.matrix.multiply( matrix.makeRotationAxis( vector.fromArray( array ), angle ) );
 						data.transforms[ child.getAttribute( 'sid' ) ] = child.nodeName;
 						break;
@@ -3088,11 +3088,11 @@ THREE.ColladaLoader.prototype = {
 			// instance lights
 
 			for ( var i = 0, l = instanceLights.length; i < l; i ++ ) {
-        var instanceCamera = getCamera( instanceCameras[ i ] );
+				var instanceLight = getLight( instanceLights[ i ] );
 
-				if ( instanceCamera !== null ) {
+				if ( instanceLight !== null ) {
 
-					objects.push( instanceCamera.clone() );
+					objects.push( instanceLight.clone() );
 
 				}
 
