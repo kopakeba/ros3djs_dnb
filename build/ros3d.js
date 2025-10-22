@@ -412,16 +412,21 @@ ROS3D.DepthCloud.prototype.initStreamer = function() {
 
   if (this.metaLoaded) {
     this.texture = new THREE.Texture(this.video);
-    this.geometry = new THREE.Geometry();
+    this.geometry = new THREE.BufferGeometry();
 
+    // Create position attribute for vertices
+    var positions = new Float32Array(this.width * this.height * 3);
+    
     for (var i = 0, l = this.width * this.height; i < l; i++) {
-
-      var vertex = new THREE.Vector3();
-      vertex.x = (i % this.width);
-      vertex.y = Math.floor(i / this.width);
-
-      this.geometry.vertices.push(vertex);
+      var x = (i % this.width);
+      var y = Math.floor(i / this.width);
+      
+      positions[i * 3] = x;
+      positions[i * 3 + 1] = y;
+      positions[i * 3 + 2] = 0;
     }
+    
+    this.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
     this.material = new THREE.ShaderMaterial({
       uniforms : {
@@ -466,7 +471,7 @@ ROS3D.DepthCloud.prototype.initStreamer = function() {
       fragmentShader : this.fragment_shader
     });
 
-    this.mesh = new THREE.ParticleSystem(this.geometry, this.material);
+    this.mesh = new THREE.Points(this.geometry, this.material);
     this.mesh.position.x = 0;
     this.mesh.position.y = 0;
     this.add(this.mesh);
@@ -1685,6 +1690,7 @@ ROS3D.InteractiveMarkerMenu.prototype.hide = function(event) {
  *   * message - the marker message
  */
 ROS3D.Marker = function(options) {
+
   options = options || {};
   var path = options.path || '/';
   var message = options.message;
@@ -1773,10 +1779,11 @@ ROS3D.Marker = function(options) {
       this.add(cylinderMesh);
       break;
     case ROS3D.MARKER_LINE_STRIP:
-      var lineStripGeom = new THREE.Geometry();
+      var points = [];
       var lineStripMaterial = new THREE.LineBasicMaterial({
-        size : message.scale.x
+        linewidth : message.scale.x
       });
+
 
       // add the points
       var j;
@@ -1785,17 +1792,21 @@ ROS3D.Marker = function(options) {
         pt.x = message.points[j].x;
         pt.y = message.points[j].y;
         pt.z = message.points[j].z;
-        lineStripGeom.vertices.push(pt);
+        points.push(pt);
       }
+
+      var lineStripGeom = new THREE.BufferGeometry().setFromPoints(points);
 
       // determine the colors for each
       if (message.colors.length === message.points.length) {
-        lineStripMaterial.vertexColors = true;
+        var colors = new Float32Array(message.points.length * 3);
         for ( j = 0; j < message.points.length; j++) {
-          var clr = new THREE.Color();
-          clr.setRGB(message.colors[j].r, message.colors[j].g, message.colors[j].b);
-          lineStripGeom.colors.push(clr);
+          colors[j * 3] = message.colors[j].r;
+          colors[j * 3 + 1] = message.colors[j].g;
+          colors[j * 3 + 2] = message.colors[j].b;
         }
+        lineStripGeom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        lineStripMaterial.vertexColors = true;
       } else {
         lineStripMaterial.color.setRGB(message.color.r, message.color.g, message.color.b);
       }
@@ -1804,9 +1815,9 @@ ROS3D.Marker = function(options) {
       this.add(new THREE.Line(lineStripGeom, lineStripMaterial));
       break;
     case ROS3D.MARKER_LINE_LIST:
-      var lineListGeom = new THREE.Geometry();
+      var linePoints = [];
       var lineListMaterial = new THREE.LineBasicMaterial({
-        size : message.scale.x
+        linewidth : message.scale.x
       });
 
       // add the points
@@ -1816,23 +1827,27 @@ ROS3D.Marker = function(options) {
         v.x = message.points[k].x;
         v.y = message.points[k].y;
         v.z = message.points[k].z;
-        lineListGeom.vertices.push(v);
+        linePoints.push(v);
       }
+
+      var lineListGeom = new THREE.BufferGeometry().setFromPoints(linePoints);
 
       // determine the colors for each
       if (message.colors.length === message.points.length) {
-        lineListMaterial.vertexColors = true;
+        var lineColors = new Float32Array(message.points.length * 3);
         for ( k = 0; k < message.points.length; k++) {
-          var c = new THREE.Color();
-          c.setRGB(message.colors[k].r, message.colors[k].g, message.colors[k].b);
-          lineListGeom.colors.push(c);
+          lineColors[k * 3] = message.colors[k].r;
+          lineColors[k * 3 + 1] = message.colors[k].g;
+          lineColors[k * 3 + 2] = message.colors[k].b;
         }
+        lineListGeom.setAttribute('color', new THREE.BufferAttribute(lineColors, 3));
+        lineListMaterial.vertexColors = true;
       } else {
         lineListMaterial.color.setRGB(message.color.r, message.color.g, message.color.b);
       }
 
-      // add the line
-      this.add(new THREE.Line(lineListGeom, lineListMaterial,THREE.LinePieces));
+      // add the line segments
+      this.add(new THREE.LineSegments(lineListGeom, lineListMaterial));
       break;
     case ROS3D.MARKER_CUBE_LIST:
       // holds the main object
@@ -1899,36 +1914,39 @@ ROS3D.Marker = function(options) {
       this.add(sphereObject);
       break;
     case ROS3D.MARKER_POINTS:
-      // for now, use a particle system for the lists
-      var geometry = new THREE.Geometry();
-      var material = new THREE.ParticleBasicMaterial({
+      // use Points for the point cloud
+      var pointPositions = new Float32Array(message.points.length * 3);
+      var material = new THREE.PointsMaterial({
         size : message.scale.x
       });
 
       // add the points
       var i;
       for ( i = 0; i < message.points.length; i++) {
-        var vertex = new THREE.Vector3();
-        vertex.x = message.points[i].x;
-        vertex.y = message.points[i].y;
-        vertex.z = message.points[i].z;
-        geometry.vertices.push(vertex);
+        pointPositions[i * 3] = message.points[i].x;
+        pointPositions[i * 3 + 1] = message.points[i].y;
+        pointPositions[i * 3 + 2] = message.points[i].z;
       }
+
+      var geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(pointPositions, 3));
 
       // determine the colors for each
       if (message.colors.length === message.points.length) {
-        material.vertexColors = true;
+        var pointColors = new Float32Array(message.points.length * 3);
         for ( i = 0; i < message.points.length; i++) {
-          var color = new THREE.Color();
-          color.setRGB(message.colors[i].r, message.colors[i].g, message.colors[i].b);
-          geometry.colors.push(color);
+          pointColors[i * 3] = message.colors[i].r;
+          pointColors[i * 3 + 1] = message.colors[i].g;
+          pointColors[i * 3 + 2] = message.colors[i].b;
         }
+        geometry.setAttribute('color', new THREE.BufferAttribute(pointColors, 3));
+        material.vertexColors = true;
       } else {
         material.color.setRGB(message.color.r, message.color.g, message.color.b);
       }
 
-      // add the particle system
-      this.add(new THREE.ParticleSystem(geometry, material));
+      // add the point system
+      this.add(new THREE.Points(geometry, material));
       break;
     case ROS3D.MARKER_TEXT_VIEW_FACING:
       // only work on non-empty text
@@ -2670,16 +2688,21 @@ ROS3D.Grid = function(options) {
   for (var i = 0; i <= num_cells; ++i) {
     var edge = cellSize * num_cells / 2;
     var position = edge - (i * cellSize);
-    var geometryH = new THREE.Geometry();
-    geometryH.vertices.push(
-      new THREE.Vector3( -edge, position, 0 ),
-      new THREE.Vector3( edge, position, 0 )
-    );
-    var geometryV = new THREE.Geometry();
-    geometryV.vertices.push(
-      new THREE.Vector3( position, -edge, 0 ),
-      new THREE.Vector3( position, edge, 0 )
-    );
+    
+    // Horizontal line using BufferGeometry
+    var pointsH = [
+      new THREE.Vector3(-edge, position, 0),
+      new THREE.Vector3(edge, position, 0)
+    ];
+    var geometryH = new THREE.BufferGeometry().setFromPoints(pointsH);
+    
+    // Vertical line using BufferGeometry
+    var pointsV = [
+      new THREE.Vector3(position, -edge, 0),
+      new THREE.Vector3(position, edge, 0)
+    ];
+    var geometryV = new THREE.BufferGeometry().setFromPoints(pointsV);
+    
     this.add(new THREE.Line(geometryH, material));
     this.add(new THREE.Line(geometryV, material));
   }
@@ -2820,45 +2843,47 @@ ROS3D.TriangleList = function(options) {
   // set the material to be double sided
   material.side = THREE.DoubleSide;
 
-  // construct the geometry
-  var geometry = new THREE.Geometry();
-  for (i = 0; i < vertices.length; i++) {
-    geometry.vertices.push(new THREE.Vector3(vertices[i].x, vertices[i].y, vertices[i].z));
+  // construct the geometry using BufferGeometry
+  var geometry = new THREE.BufferGeometry();
+  
+  // Create positions array
+  var positions = new Float32Array(vertices.length * 3);
+  for (var i = 0; i < vertices.length; i++) {
+    positions[i * 3] = vertices[i].x;
+    positions[i * 3 + 1] = vertices[i].y;
+    positions[i * 3 + 2] = vertices[i].z;
   }
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
   // set the colors
-  var i, j;
   if (colors.length === vertices.length) {
     // use per-vertex color
-    for (i = 0; i < vertices.length; i += 3) {
-      var faceVert = new THREE.Face3(i, i + 1, i + 2);
-      for (j = i * 3; j < i * 3 + 3; i++) {
-        var color = new THREE.Color();
-        color.setRGB(colors[i].r, colors[i].g, colors[i].b);
-        faceVert.vertexColors.push(color);
-      }
-      geometry.faces.push(faceVert);
+    var colorArray = new Float32Array(vertices.length * 3);
+    for (var i = 0; i < vertices.length; i++) {
+      colorArray[i * 3] = colors[i].r;
+      colorArray[i * 3 + 1] = colors[i].g;
+      colorArray[i * 3 + 2] = colors[i].b;
     }
-    material.vertexColors = THREE.VertexColors;
+    geometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+    material.vertexColors = true;
   } else if (colors.length === vertices.length / 3) {
-    // use per-triangle color
-    for (i = 0; i < vertices.length; i += 3) {
-      var faceTri = new THREE.Face3(i, i + 1, i + 2);
-      faceTri.color.setRGB(colors[i / 3].r, colors[i / 3].g, colors[i / 3].b);
-      geometry.faces.push(faceTri);
+    // use per-triangle color - expand to per-vertex
+    var triangleColors = new Float32Array(vertices.length * 3);
+    for (var i = 0; i < vertices.length; i += 3) {
+      var colorIndex = Math.floor(i / 3);
+      for (var j = 0; j < 3; j++) {
+        triangleColors[(i + j) * 3] = colors[colorIndex].r;
+        triangleColors[(i + j) * 3 + 1] = colors[colorIndex].g;
+        triangleColors[(i + j) * 3 + 2] = colors[colorIndex].b;
+      }
     }
-    material.vertexColors = THREE.FaceColors;
-  } else {
-    // use marker color
-    for (i = 0; i < vertices.length; i += 3) {
-      var face = new THREE.Face3(i, i + 1, i + 2);
-      geometry.faces.push(face);
-    }
+    geometry.setAttribute('color', new THREE.BufferAttribute(triangleColors, 3));
+    material.vertexColors = true;
   }
 
   geometry.computeBoundingBox();
   geometry.computeBoundingSphere();
-  geometry.computeFaceNormals();
+  geometry.computeVertexNormals();
 
   this.add(new THREE.Mesh(geometry, material));
 };
@@ -3221,14 +3246,16 @@ ROS3D.Path.prototype.processMessage = function(message){
       this.rootObject.remove(this.sn);
   }
 
-  var lineGeometry = new THREE.Geometry();
+  var points = [];
   for(var i=0; i<message.poses.length;i++){
       var v3 = new THREE.Vector3( message.poses[i].pose.position.x, message.poses[i].pose.position.y,
                                   message.poses[i].pose.position.z);
-      lineGeometry.vertices.push(v3);
+      points.push(v3);
   }
 
-  lineGeometry.computeLineDistances();
+  var lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+  lineGeometry.computeBoundingBox();
+  lineGeometry.computeBoundingSphere();
   var lineMaterial = new THREE.LineBasicMaterial( { color: this.color } );
   var line = new THREE.Line( lineGeometry, lineMaterial );
 
@@ -3384,17 +3411,20 @@ ROS3D.Polygon.prototype.processMessage = function(message){
       this.rootObject.remove(this.sn);
   }
 
-  var lineGeometry = new THREE.Geometry();
+  var points = [];
   var v3;
   for(var i=0; i<message.polygon.points.length;i++){
       v3 = new THREE.Vector3( message.polygon.points[i].x, message.polygon.points[i].y,
                               message.polygon.points[i].z);
-      lineGeometry.vertices.push(v3);
+      points.push(v3);
   }
   v3 = new THREE.Vector3( message.polygon.points[0].x, message.polygon.points[0].y,
                           message.polygon.points[0].z);
-  lineGeometry.vertices.push(v3);
-  lineGeometry.computeLineDistances();
+  points.push(v3);
+  
+  var lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+  lineGeometry.computeBoundingBox();
+  lineGeometry.computeBoundingSphere();
   var lineMaterial = new THREE.LineBasicMaterial( { color: this.color } );
   var line = new THREE.Line( lineGeometry, lineMaterial );
 
@@ -3562,11 +3592,11 @@ ROS3D.PoseArray.prototype.processMessage = function(message){
   var line;
 
   for(var i=0;i<message.poses.length;i++){
-      var lineGeometry = new THREE.Geometry();
+      var points = [];
 
       var v3 = new THREE.Vector3( message.poses[i].position.x, message.poses[i].position.y,
                                   message.poses[i].position.z);
-      lineGeometry.vertices.push(v3);
+      points.push(v3.clone());
 
       var rot = new THREE.Quaternion(message.poses[i].orientation.x, message.poses[i].orientation.y,
                                      message.poses[i].orientation.z, message.poses[i].orientation.w);
@@ -3578,12 +3608,14 @@ ROS3D.PoseArray.prototype.processMessage = function(message){
       side1.applyQuaternion(rot);
       side2.applyQuaternion(rot);
 
-      lineGeometry.vertices.push(tip.add(v3));
-      lineGeometry.vertices.push(side1.add(v3));
-      lineGeometry.vertices.push(side2.add(v3));
-      lineGeometry.vertices.push(tip);
+      points.push(tip.add(v3.clone()));
+      points.push(side1.add(v3.clone()));
+      points.push(side2.add(v3.clone()));
+      points.push(tip.clone());
 
-      lineGeometry.computeLineDistances();
+      var lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+      lineGeometry.computeBoundingBox();
+      lineGeometry.computeBoundingSphere();
       var lineMaterial = new THREE.LineBasicMaterial( { color: this.color } );
       line = new THREE.Line( lineGeometry, lineMaterial );
 
@@ -3786,7 +3818,7 @@ ROS3D.NavSatFix = function(options) {
 
   this.geom = new THREE.BufferGeometry();
   this.vertices = new THREE.BufferAttribute(new Float32Array( 6 * this.keep ), 3 );
-  this.geom.addAttribute( 'position',  this.vertices);
+  this.geom.setAttribute( 'position',  this.vertices);
   this.material = material.isMaterial ? material : new THREE.LineBasicMaterial( material );
   this.line = new THREE.Line( this.geom, this.material );
   this.rootObject.add(this.object3d);
@@ -4034,7 +4066,7 @@ ROS3D.Points.prototype.setup = function(frame, point_step, fields)
         this.geom = new THREE.BufferGeometry();
 
         this.positions = new THREE.BufferAttribute( new Float32Array( this.max_pts * 3), 3, false );
-        this.geom.addAttribute( 'position', this.positions.setDynamic(true) );
+        this.geom.setAttribute( 'position', this.positions );
 
         if(!this.colorsrc && this.fields.rgb) {
             this.colorsrc = 'rgb';
@@ -4043,7 +4075,7 @@ ROS3D.Points.prototype.setup = function(frame, point_step, fields)
             var field = this.fields[this.colorsrc];
             if (field) {
                 this.colors = new THREE.BufferAttribute( new Float32Array( this.max_pts * 3), 3, false );
-                this.geom.addAttribute( 'color', this.colors.setDynamic(true) );
+                this.geom.setAttribute( 'color', this.colors );
                 var offset = field.offset;
                 this.getColor = [
                     function(dv,base,le){return dv.getInt8(base+offset,le);},

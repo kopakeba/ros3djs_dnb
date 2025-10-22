@@ -27,45 +27,47 @@ ROS3D.TriangleList = function(options) {
   // set the material to be double sided
   material.side = THREE.DoubleSide;
 
-  // construct the geometry
-  var geometry = new THREE.Geometry();
-  for (i = 0; i < vertices.length; i++) {
-    geometry.vertices.push(new THREE.Vector3(vertices[i].x, vertices[i].y, vertices[i].z));
+  // construct the geometry using BufferGeometry
+  var geometry = new THREE.BufferGeometry();
+  
+  // Create positions array
+  var positions = new Float32Array(vertices.length * 3);
+  for (var i = 0; i < vertices.length; i++) {
+    positions[i * 3] = vertices[i].x;
+    positions[i * 3 + 1] = vertices[i].y;
+    positions[i * 3 + 2] = vertices[i].z;
   }
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
   // set the colors
-  var i, j;
   if (colors.length === vertices.length) {
     // use per-vertex color
-    for (i = 0; i < vertices.length; i += 3) {
-      var faceVert = new THREE.Face3(i, i + 1, i + 2);
-      for (j = i * 3; j < i * 3 + 3; i++) {
-        var color = new THREE.Color();
-        color.setRGB(colors[i].r, colors[i].g, colors[i].b);
-        faceVert.vertexColors.push(color);
-      }
-      geometry.faces.push(faceVert);
+    var colorArray = new Float32Array(vertices.length * 3);
+    for (var i = 0; i < vertices.length; i++) {
+      colorArray[i * 3] = colors[i].r;
+      colorArray[i * 3 + 1] = colors[i].g;
+      colorArray[i * 3 + 2] = colors[i].b;
     }
-    material.vertexColors = THREE.VertexColors;
+    geometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+    material.vertexColors = true;
   } else if (colors.length === vertices.length / 3) {
-    // use per-triangle color
-    for (i = 0; i < vertices.length; i += 3) {
-      var faceTri = new THREE.Face3(i, i + 1, i + 2);
-      faceTri.color.setRGB(colors[i / 3].r, colors[i / 3].g, colors[i / 3].b);
-      geometry.faces.push(faceTri);
+    // use per-triangle color - expand to per-vertex
+    var triangleColors = new Float32Array(vertices.length * 3);
+    for (var i = 0; i < vertices.length; i += 3) {
+      var colorIndex = Math.floor(i / 3);
+      for (var j = 0; j < 3; j++) {
+        triangleColors[(i + j) * 3] = colors[colorIndex].r;
+        triangleColors[(i + j) * 3 + 1] = colors[colorIndex].g;
+        triangleColors[(i + j) * 3 + 2] = colors[colorIndex].b;
+      }
     }
-    material.vertexColors = THREE.FaceColors;
-  } else {
-    // use marker color
-    for (i = 0; i < vertices.length; i += 3) {
-      var face = new THREE.Face3(i, i + 1, i + 2);
-      geometry.faces.push(face);
-    }
+    geometry.setAttribute('color', new THREE.BufferAttribute(triangleColors, 3));
+    material.vertexColors = true;
   }
 
   geometry.computeBoundingBox();
   geometry.computeBoundingSphere();
-  geometry.computeFaceNormals();
+  geometry.computeVertexNormals();
 
   this.add(new THREE.Mesh(geometry, material));
 };

@@ -244,16 +244,21 @@ ROS3D.DepthCloud.prototype.initStreamer = function() {
 
   if (this.metaLoaded) {
     this.texture = new THREE.Texture(this.video);
-    this.geometry = new THREE.Geometry();
+    this.geometry = new THREE.BufferGeometry();
 
+    // Create position attribute for vertices
+    var positions = new Float32Array(this.width * this.height * 3);
+    
     for (var i = 0, l = this.width * this.height; i < l; i++) {
-
-      var vertex = new THREE.Vector3();
-      vertex.x = (i % this.width);
-      vertex.y = Math.floor(i / this.width);
-
-      this.geometry.vertices.push(vertex);
+      var x = (i % this.width);
+      var y = Math.floor(i / this.width);
+      
+      positions[i * 3] = x;
+      positions[i * 3 + 1] = y;
+      positions[i * 3 + 2] = 0;
     }
+    
+    this.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
     this.material = new THREE.ShaderMaterial({
       uniforms : {
@@ -298,7 +303,7 @@ ROS3D.DepthCloud.prototype.initStreamer = function() {
       fragmentShader : this.fragment_shader
     });
 
-    this.mesh = new THREE.ParticleSystem(this.geometry, this.material);
+    this.mesh = new THREE.Points(this.geometry, this.material);
     this.mesh.position.x = 0;
     this.mesh.position.y = 0;
     this.add(this.mesh);

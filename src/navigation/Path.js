@@ -62,14 +62,16 @@ ROS3D.Path.prototype.processMessage = function(message){
       this.rootObject.remove(this.sn);
   }
 
-  var lineGeometry = new THREE.Geometry();
+  var points = [];
   for(var i=0; i<message.poses.length;i++){
       var v3 = new THREE.Vector3( message.poses[i].pose.position.x, message.poses[i].pose.position.y,
                                   message.poses[i].pose.position.z);
-      lineGeometry.vertices.push(v3);
+      points.push(v3);
   }
 
-  lineGeometry.computeLineDistances();
+  var lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+  lineGeometry.computeBoundingBox();
+  lineGeometry.computeBoundingSphere();
   var lineMaterial = new THREE.LineBasicMaterial( { color: this.color } );
   var line = new THREE.Line( lineGeometry, lineMaterial );
 

@@ -67,7 +67,7 @@ ROS3D.Points.prototype.setup = function(frame, point_step, fields)
         this.geom = new THREE.BufferGeometry();
 
         this.positions = new THREE.BufferAttribute( new Float32Array( this.max_pts * 3), 3, false );
-        this.geom.addAttribute( 'position', this.positions.setDynamic(true) );
+        this.geom.setAttribute( 'position', this.positions );
 
         if(!this.colorsrc && this.fields.rgb) {
             this.colorsrc = 'rgb';
@@ -76,7 +76,7 @@ ROS3D.Points.prototype.setup = function(frame, point_step, fields)
             var field = this.fields[this.colorsrc];
             if (field) {
                 this.colors = new THREE.BufferAttribute( new Float32Array( this.max_pts * 3), 3, false );
-                this.geom.addAttribute( 'color', this.colors.setDynamic(true) );
+                this.geom.setAttribute( 'color', this.colors );
                 var offset = field.offset;
                 this.getColor = [
                     function(dv,base,le){return dv.getInt8(base+offset,le);},

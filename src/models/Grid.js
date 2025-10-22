@@ -34,16 +34,21 @@ ROS3D.Grid = function(options) {
   for (var i = 0; i <= num_cells; ++i) {
     var edge = cellSize * num_cells / 2;
     var position = edge - (i * cellSize);
-    var geometryH = new THREE.Geometry();
-    geometryH.vertices.push(
-      new THREE.Vector3( -edge, position, 0 ),
-      new THREE.Vector3( edge, position, 0 )
-    );
-    var geometryV = new THREE.Geometry();
-    geometryV.vertices.push(
-      new THREE.Vector3( position, -edge, 0 ),
-      new THREE.Vector3( position, edge, 0 )
-    );
+    
+    // Horizontal line using BufferGeometry
+    var pointsH = [
+      new THREE.Vector3(-edge, position, 0),
+      new THREE.Vector3(edge, position, 0)
+    ];
+    var geometryH = new THREE.BufferGeometry().setFromPoints(pointsH);
+    
+    // Vertical line using BufferGeometry
+    var pointsV = [
+      new THREE.Vector3(position, -edge, 0),
+      new THREE.Vector3(position, edge, 0)
+    ];
+    var geometryV = new THREE.BufferGeometry().setFromPoints(pointsV);
+    
     this.add(new THREE.Line(geometryH, material));
     this.add(new THREE.Line(geometryV, material));
   }

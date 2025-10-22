@@ -67,11 +67,11 @@ ROS3D.PoseArray.prototype.processMessage = function(message){
   var line;
 
   for(var i=0;i<message.poses.length;i++){
-      var lineGeometry = new THREE.Geometry();
+      var points = [];
 
       var v3 = new THREE.Vector3( message.poses[i].position.x, message.poses[i].position.y,
                                   message.poses[i].position.z);
-      lineGeometry.vertices.push(v3);
+      points.push(v3.clone());
 
       var rot = new THREE.Quaternion(message.poses[i].orientation.x, message.poses[i].orientation.y,
                                      message.poses[i].orientation.z, message.poses[i].orientation.w);
@@ -83,12 +83,14 @@ ROS3D.PoseArray.prototype.processMessage = function(message){
       side1.applyQuaternion(rot);
       side2.applyQuaternion(rot);
 
-      lineGeometry.vertices.push(tip.add(v3));
-      lineGeometry.vertices.push(side1.add(v3));
-      lineGeometry.vertices.push(side2.add(v3));
-      lineGeometry.vertices.push(tip);
+      points.push(tip.add(v3.clone()));
+      points.push(side1.add(v3.clone()));
+      points.push(side2.add(v3.clone()));
+      points.push(tip.clone());
 
-      lineGeometry.computeLineDistances();
+      var lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+      lineGeometry.computeBoundingBox();
+      lineGeometry.computeBoundingSphere();
       var lineMaterial = new THREE.LineBasicMaterial( { color: this.color } );
       line = new THREE.Line( lineGeometry, lineMaterial );
 
